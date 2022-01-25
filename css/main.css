@@ -1,0 +1,30 @@
+body{
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+
+}
+#quiz{
+    text-align: center;
+}
+
+table{
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td{
+    border: 1px solid #cccccc;
+    padding: 8px;
+}
+th{
+    font-weight: bold;
+    text-transform: uppercase;
+}
+tr:nth-child(even){
+    background-color: #dddddd;
+}
+#recap{ 
+    display: flex;
+}
