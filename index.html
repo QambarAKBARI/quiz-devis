@@ -15,25 +15,30 @@
 <body id="body">
 
 
-    <div id="startQuizz">
-        <h2>Allez vous êtes curieux pour le prix que ça côute  !! </h2>
-        <button class='uk-button-primary uk-button-large'  onclick='displayQuizz()'>Cliquez ici pour commencer !!</button>
-    </div>
+
 
     <div class="uk-container">
+        <div id="startQuizz">
+            <h2>Allez vous êtes curieux pour le prix que ça côute  !! </h2>
+            <button class='uk-button-primary uk-button-large'  onclick='displayQuizz()'>Cliquez ici</button>
+        </div>
+
         <h3 id="estimation"></h3>
         <div class="uk-animation-toggle" tabindex="0">
             <div  id="quizz">
                 <div class="uk-card contenuQuizz" id='affichage-question'></div>
-                <div class="contenuQuizz" id='affichage-reponse'></div>
+                <div class="contenuQuizz uk-text-center" id='affichage-reponse'></div>
             </div>
         </div>
-    </div>
 
-    
         <div id='affiche-bouton-retour'></div>
         <div id="recap"></div>
         <div id="boutonImprimer"></div>
+
+    </div>
+
+    
+
 
 
 
@@ -67,19 +72,20 @@
                     boutonRetourClique = false
                 }
 
-                $("#affiche-bouton-retour").html("")
+                //$("#affiche-bouton-retour").html("")
 
                 if(apiResponse.fields.isPremiere !== 1){
                     idQuestionPrecedente = lesIdsQuestions[lesIdsQuestions.length - 2]
                     if(typeof idQuestionPrecedente !== 'undefined'){
                     var boutonRetour = 
-                        "<button class='uk-button-primary uk-button-small' id='bouton-retour'  onclick='afficherLaQuestion(idQuestionPrecedente, true)'>Retour</button>" 
+                        "<button class='uk-button-danger uk-button-small' id='bouton-retour'  onclick='afficherLaQuestion(idQuestionPrecedente, true)'>Retour</button>" 
                         $("#affiche-bouton-retour").html(boutonRetour)
                     }
    
                 }
                 //On affiche la question
                 $(".contenuQuizz").hide()
+                $("#affiche-bouton-retour").hide()
                 if (typeof apiResponse.fields.txtQuestion !== 'undefined' && typeof apiResponse.fields.complement !== 'undefined') 
                 {
                     
@@ -121,12 +127,13 @@
 
                             }
                             reponseBouton =
-                                     "<button class='uk-button-primary uk-button-small uk-margin-medium-left boutonReponse'  onclick='changeColor();' "+ attributBoutonReponse +"  data-id-reponse='" + reponse.id + "'>" + reponse.fields.txtReponse + "</button>" 
+                                     "<button class='uk-button-primary uk-button-small  boutonReponse'  onclick='changeColor();' "+ attributBoutonReponse +"  data-id-reponse='" + reponse.id + "'>" + reponse.fields.txtReponse + "</button>" 
                                 $("#affichage-reponse").append(reponseBouton)
 
                         })
 
                         $(".contenuQuizz").fadeIn(700)
+                        $("#affiche-bouton-retour").fadeIn(700)
 
                         //On récupère les dataset de questionSuivante et dataset de l'id de réponse 
                         //on passe l'id de la réponse dans la requette pour récupérer les infos 
@@ -160,6 +167,7 @@
                                         recaps.push(ligneObjet)
 
                                         $(".contenuQuizz").html("")
+                                        $("#affiche-bouton-retour").html("")
                                         if(questionSuivante){
                                             afficherLaQuestion(questionSuivante, false)
 
@@ -196,7 +204,6 @@
     
     //fonction pour afficher le devis
     function afficherLeDevis(){
-        
         const recap = document.querySelector("#recap")
         const boutonRetour = document.querySelector("#affiche-bouton-retour")
         const boutonImprimer = document.querySelector("#boutonImprimer")
@@ -228,7 +235,7 @@
 
 
 
-    var colors = ["#A3E4DB", "#F4EEA9", "#FED2AA", "#F5EEDC"];
+    var colors = ["#A3E4DB", "#F4EEA9", "#F5EEDC", "#FED2AA", "#E6E6E6", "#FFEDD3"];
     var colorIndex = 0;
     function changeColor() {
 
