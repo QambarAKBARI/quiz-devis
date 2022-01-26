@@ -8,10 +8,13 @@
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.10.0/dist/js/uikit.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/uikit@3.10.0/dist/js/uikit-icons.min.js"></script>
     <script src="https://code.jquery.com/jquery-1.12.2.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <link rel="stylesheet" href="css/main.css">
     <title>Quiz</title>
 </head>
-<body>
+<body id="body">
+
+
     <div id="startQuizz">
         <h2>Allez vous êtes curieux pour le prix que ça côute  !! </h2>
         <button class='uk-button-primary uk-button-large'  onclick='displayQuizz()'>Cliquez ici pour commencer !!</button>
@@ -19,19 +22,19 @@
 
     <div class="uk-container">
         <h3 id="estimation"></h3>
-        <div id="quizz">
-            <div class="uk-card" id='affichage-question'></div>
-            <div id='affichage-reponse'></div>
+        <div class="uk-animation-toggle" tabindex="0">
+            <div  id="quizz">
+                <div class="uk-card contenuQuizz" id='affichage-question'></div>
+                <div class="contenuQuizz" id='affichage-reponse'></div>
+            </div>
         </div>
     </div>
-    <div class="uk-container">
+
+    
         <div id='affiche-bouton-retour'></div>
-        <div id="recap">
-            <div id='descriptionTable'></div>
-            <div id="priceTable"></div>
-        </div>
+        <div id="recap"></div>
         <div id="boutonImprimer"></div>
-    </div>
+
 
 
 
@@ -39,13 +42,11 @@
 
     <script>
 
-    var tousLesValeurs = []
-    var lesDescriptions = []
     var totalValeur = 1000
     var lesIdsQuestions = []
     var ligneObjet = {}
     var recaps = []
-
+    const quizz = document.querySelector("#quizz")
 
     // La fonction afficherLaQuestion prend en paramétre idQuestion
     function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
@@ -54,6 +55,7 @@
         $.ajax({
             url: urlCallQuestion,
             dataType: 'json',
+   
             success: function(apiResponse) {
 
                 //boutonRetourCliqué s'agit de boutonRetour pour chaque question par defaut il est à false
@@ -71,14 +73,16 @@
                     idQuestionPrecedente = lesIdsQuestions[lesIdsQuestions.length - 2]
                     if(typeof idQuestionPrecedente !== 'undefined'){
                     var boutonRetour = 
-                        "<button class='uk-button-notice uk-button-small' id='bouton-retour'  onclick='afficherLaQuestion(idQuestionPrecedente, true)'>Retour</button>" 
+                        "<button class='uk-button-primary uk-button-small' id='bouton-retour'  onclick='afficherLaQuestion(idQuestionPrecedente, true)'>Retour</button>" 
                         $("#affiche-bouton-retour").html(boutonRetour)
                     }
    
                 }
-
+                //On affiche la question
+                $(".contenuQuizz").hide()
                 if (typeof apiResponse.fields.txtQuestion !== 'undefined' && typeof apiResponse.fields.complement !== 'undefined') 
                 {
+                    
                     var questionTexte =
                         "<h2>" + apiResponse.fields.txtQuestion + "</h2>" +
                         "<h4>" + apiResponse.fields.complement + "</h4>"
@@ -117,24 +121,33 @@
 
                             }
                             reponseBouton =
-                                     "<button class='uk-button-primary uk-button-large uk-margin-medium-left boutonReponse'   "+ attributBoutonReponse +"  data-id-reponse='" + reponse.id + "'>" + reponse.fields.txtReponse + "</button>" 
+                                     "<button class='uk-button-primary uk-button-small uk-margin-medium-left boutonReponse'  onclick='changeColor();' "+ attributBoutonReponse +"  data-id-reponse='" + reponse.id + "'>" + reponse.fields.txtReponse + "</button>" 
                                 $("#affichage-reponse").append(reponseBouton)
 
                         })
+
+                        $(".contenuQuizz").fadeIn(700)
 
                         //On récupère les dataset de questionSuivante et dataset de l'id de réponse 
                         //on passe l'id de la réponse dans la requette pour récupérer les infos 
                         //correspandant à cett id
                         var lesBoutons = document.querySelectorAll(".boutonReponse")
                         lesBoutons.forEach( el => {
+                            //quizz.classList.remove('fade-animation')
+                            quizz.classList.remove('uk-animation-fade')
+                            quizz.classList.remove('uk-animation-reverse')
                             el.addEventListener('click', (boutonClique) => {
                                 
+                                //quizz.classList.add('fade-animation')
+                                quizz.classList.add('uk-animation-fade')
+                                quizz.classList.add('uk-animation-reverse')
                                 var questionSuivante = boutonClique.target.dataset.qstSuiv
                                 var theReponseId = boutonClique.target.dataset.idReponse
                                 
                                 $.ajax({
                                     url: "https://api.airtable.com/v0/appDy1ud9kdkbSAOb/Reponses/"+ theReponseId +"?api_key=keyxEX6nxNX72eMkB",
-                                    dataType: 'json',
+                                    contentType : 'application/json',
+                                    dataType : 'json',
                                     success: function(apiResponse) {
                                         //contient le prix donné à cette réponse
                                         var laValeurReponse = apiResponse.fields.valeur
@@ -146,17 +159,14 @@
                                         ligneObjet = {"prix": laValeurReponse, "description": descriptionLigneDevis}
                                         recaps.push(ligneObjet)
 
-                                        //lesDescriptions.push(descriptionLigneDevis)
-                                        //console.log(recaps)
-                                    
-
+                                        $(".contenuQuizz").html("")
                                         if(questionSuivante){
                                             afficherLaQuestion(questionSuivante, false)
+
                                         }else {
                                             afficherLeDevis()
                                             
                                         }
-
                                         
                                     }
                                 })
@@ -180,23 +190,21 @@
         const startQuizz = document.querySelector("#startQuizz")
         startQuizz.innerHTML = ""
         afficherLaQuestion(firstQuestion, false)
+        changeColor()
     }
 
     
     //fonction pour afficher le devis
     function afficherLeDevis(){
-        const quizz = document.querySelector("#quizz")
+        
         const recap = document.querySelector("#recap")
-        const descriptionTable = document.querySelector("#descriptionTable")
-        const priceTable = document.querySelector("#priceTable")
         const boutonRetour = document.querySelector("#affiche-bouton-retour")
         const boutonImprimer = document.querySelector("#boutonImprimer")
+
         recaps.forEach(record => {
             totalValeur += record.prix
             console.log(record)
         })
-
-
         quizz.innerHTML = "<h1>A bientôt</h1><h3>L'estimation de prix de votre site s'élève à "+ totalValeur +"€</h3>"
         boutonRetour.innerHTML = ""
         boutonImprimer.innerHTML = "<button type='submit' class='uk-button-primary uk-button-small' onclick='imprime()'>Imprimer</button>"
@@ -213,10 +221,6 @@
                     tableString += "<tr><td>Ii y a pas de description pour le moment</td><td>"+ recap.prix +"</td></tr>"
                }
             })
-                
-                
-
-            
             
         tableString += "</tbody></table>"                  
         return tableString
@@ -224,7 +228,17 @@
 
 
 
+    var colors = ["#A3E4DB", "#F4EEA9", "#FED2AA", "#F5EEDC"];
+    var colorIndex = 0;
+    function changeColor() {
 
+        let col = document.getElementById("body");
+        if( colorIndex >= colors.length ) {
+            colorIndex = 0;
+        }
+        col.style.backgroundColor = colors[colorIndex];
+        colorIndex++;
+    }
 
 
     </script>

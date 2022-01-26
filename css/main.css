@@ -27,4 +27,22 @@ tr:nth-child(even){
 }
 #recap{ 
     display: flex;
+    width: 100%;
 }
+
+.fade-animation {
+    animation: fadeIn ease-out 5s;
+}
+  @keyframes fadeIn {
+    0% {opacity:0;}
+    100% {opacity:1;}
+  }
+  
+
+#affichage-question{
+    max-width: 665px;
+}
+#affichage-reponse{
+    max-width: 504px;
+}
+
