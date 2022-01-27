@@ -18,39 +18,50 @@
 
 
     <div class="uk-container">
+
         <div id="startQuizz">
             <h2>Allez vous êtes curieux pour le prix que ça côute  !! </h2>
             <button class='uk-button-primary uk-button-large'  onclick='displayQuizz()'>Cliquez ici</button>
         </div>
 
-        <h3 id="estimation"></h3>
-        <div class="uk-animation-toggle" tabindex="0">
-            <div  id="quizz">
+        <div class="affichage-page-budget">
+            <h3 id="budget-client"></h3>
+        </div>
+        <div class="uk-animation" tabindex="0">
+
+            <div id="quizz">
                 <div class="uk-card contenuQuizz" id='affichage-question'></div>
-                <div class="contenuQuizz uk-text-center" id='affichage-reponse'></div>
+                <div class="contenuQuizz" id='affichage-reponse'></div>
+                <div class="contenuQuizz" id='affiche-bouton-retour'></div>
             </div>
+
+            <div class="affichage-devis">
+                
+                <h3 id="budgetSaisi"></h3>
+                <div id="recapBudgetClient"></div>
+
+                <h3 id="estimation"></h3>
+                <div id="recap"></div>
+                <div id="boutonImprimer"></div>
+            </div>
+
         </div>
 
-        <div id='affiche-bouton-retour'></div>
-        <div id="recap"></div>
-        <div id="boutonImprimer"></div>
+        
+        
+        
 
     </div>
 
     
 
-
-
-
-
-
-
     <script>
 
-    var totalValeur = 1000
+    var totalValeur = 0
     var lesIdsQuestions = []
     var ligneObjet = {}
     var recaps = []
+    var valeurBudgetClient = 0
     const quizz = document.querySelector("#quizz")
 
     // La fonction afficherLaQuestion prend en paramétre idQuestion
@@ -85,7 +96,7 @@
                 }
                 //On affiche la question
                 $(".contenuQuizz").hide()
-                $("#affiche-bouton-retour").hide()
+                $(".affichage-devis").hide()
                 if (typeof apiResponse.fields.txtQuestion !== 'undefined' && typeof apiResponse.fields.complement !== 'undefined') 
                 {
                     
@@ -133,8 +144,7 @@
                         })
 
                         $(".contenuQuizz").fadeIn(700)
-                        $("#affiche-bouton-retour").fadeIn(700)
-
+                        
                         //On récupère les dataset de questionSuivante et dataset de l'id de réponse 
                         //on passe l'id de la réponse dans la requette pour récupérer les infos 
                         //correspandant à cett id
@@ -158,21 +168,22 @@
                                     success: function(apiResponse) {
                                         //contient le prix donné à cette réponse
                                         var laValeurReponse = apiResponse.fields.valeur
-                                        //contient la réponse en texte oui ou non
-                                        var reponseDeChaque = apiResponse.fields.txtReponse
+                                        //contient la serviceminimale
+                                        var serviceMinimum = apiResponse.fields.ligneServiceMinimum
                                         //contient la description de la réponse
                                         var descriptionLigneDevis = apiResponse.fields.descriptionLigneDevis
 
-                                        ligneObjet = {"prix": laValeurReponse, "description": descriptionLigneDevis}
-                                        recaps.push(ligneObjet)
 
+                                        ligneObjet = {"prix": laValeurReponse, "description": descriptionLigneDevis, "serviceMinimum": serviceMinimum}
+                                        recaps.push(ligneObjet)
+                                        
                                         $(".contenuQuizz").html("")
-                                        $("#affiche-bouton-retour").html("")
                                         if(questionSuivante){
                                             afficherLaQuestion(questionSuivante, false)
 
                                         }else {
-                                            afficherLeDevis()
+                                            afficherPageBudget()
+                                            //afficherLeDevis()
                                             
                                         }
                                         
@@ -204,7 +215,12 @@
     
     //fonction pour afficher le devis
     function afficherLeDevis(){
+
+        $("#budget-client").html("")
+        quizz.classList.remove('uk-animation-fade')
+        quizz.classList.remove('uk-animation-reverse')
         const recap = document.querySelector("#recap")
+        const estimation = document.querySelector("#estimation")
         const boutonRetour = document.querySelector("#affiche-bouton-retour")
         const boutonImprimer = document.querySelector("#boutonImprimer")
 
@@ -212,22 +228,146 @@
             totalValeur += record.prix
             console.log(record)
         })
-        quizz.innerHTML = "<h1>A bientôt</h1><h3>L'estimation de prix de votre site s'élève à "+ totalValeur +"€</h3>"
+
+
+
+        if(valeurBudgetClient < 500){
+            //service minimum
+            const budgetSaisi = document.querySelector("#budgetSaisi")
+            const recapBudgetClient = document.querySelector("#recapBudgetClient")
+            budgetSaisi.innerHTML = "Les services fourins pour votre budget de  "+ valeurBudgetClient +" €"
+            recapBudgetClient.innerHTML = createTableRecapitulatifServiceMinimum()
+
+        }else if(valeurBudgetClient > 500 ){
+            console.log('oui rich')
+        }
+
+        estimation.innerHTML = "<h3>L'estimation de prix de votre site s'élève à "+ totalValeur +"€</h3>"
+        
         boutonRetour.innerHTML = ""
-        boutonImprimer.innerHTML = "<button type='submit' class='uk-button-primary uk-button-small' onclick='imprime()'>Imprimer</button>"
+        boutonImprimer.innerHTML = `<button type='submit' class='uk-button-primary uk-button-small' onclick='imprime()'>
+                                        Imprimer
+                                    </button>`
         recap.innerHTML = createTableRecapitulatif()
+        $(".affichage-devis").fadeIn(1200)
+
+
     }
 
+
+    function afficherPageBudget(){
+        const budgetClient = document.querySelector("#budget-client")
+        budgetClient.innerHTML = `<h3>Veuillez nous indiquer votre budget </h3>
+                                  <form class='uk-form'>
+                                    <label class='uk-label'>
+                                        Votre Budget
+                                        <input id='valeurIndique' type='number' class='uk-input uk-form-width-medium' placeholder='1300' required>
+                                    </label>
+                                    <input class='uk-input uk-form-success uk-form-width-medium' id='boutonValider' type='submit' value='Valider'>
+                                 </form>`
+
+        const boutonValider = document.querySelector("#boutonValider")
+        boutonValider.addEventListener('click', (e)=> {
+            e.preventDefault()
+            valeurBudgetClient = document.querySelector('#valeurIndique').value
+
+            if(typeof valeurBudgetClient !== 'undefind')
+            afficherLeDevis()
+        })
+    }
     // on crée la table de récapitulatif
     function createTableRecapitulatif() {
-        let tableString = "<table><thead><tr><th>Description</th><th>Prix</th></tr></thead><tbody>"
+        let tableString = `<table>
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Prix</th>
+                                </tr>
+                            </thead>
+                            <tbody>`
             recaps.forEach(recap => {
                 if(typeof recap.description !== 'undefined' && typeof recap.prix !== 'undefined'){
-                tableString += "<tr><td>"+ recap.description +"</td><td>"+ recap.prix +"</td></tr>"
-                }else if(typeof recap.description == 'undefined'){
-                    tableString += "<tr><td>Ii y a pas de description pour le moment</td><td>"+ recap.prix +"</td></tr>"
+                tableString += `<tr>
+                                    <td>${recap.description}</td>
+                                    <td>${recap.prix} €</td>
+                                </tr>`
+                }else if(typeof recap.description == 'undefined' && recap.prix == 0){
+                    tableString += ""
                }
             })
+            tableString += `<tr>
+                                <td>Total</td>
+                                <td>${totalValeur} €</td>
+                            </tr>`
+            
+        tableString += "</tbody></table>"                  
+        return tableString
+    }
+
+    function createTableRecapitulatifBudgetClient() {
+        let budgetRestant = valeurBudgetClient
+        console.log(budgetRestant)
+        let tableString = `<table>
+                            <thead>
+                                <tr>
+                                    <th>Description de service </th>
+                                    <th>Prix</th>
+                                </tr>
+                            </thead>
+                            <tbody>`
+            recaps.forEach(recap => {
+                if(typeof recap.description !== 'undefined' && typeof recap.prix !== 'undefined'){
+                    //while(budgetRestant >= 0){
+                        if(valeurBudgetClient %recap.prix == 0 && budgetRestant >= 0){
+                            tableString += `<tr>
+                                                <td>${recap.description}</td>
+                                                <td>${recap.prix} €</td>
+                                            </tr>`
+                            budgetRestant = valeurBudgetClient - recap.prix
+                            console.log(budgetRestant)
+                        }
+                    //}
+
+               
+                }else if(typeof recap.description == 'undefined' && recap.prix == 0){
+                    tableString += ""
+               }
+            })
+            tableString += `<tr>
+                                <td>Total</td>
+                                <td>${valeurBudgetClient} €</td>
+                            </tr>`
+            
+        tableString += "</tbody></table>"                  
+        return tableString
+    }
+
+
+    function createTableRecapitulatifServiceMinimum() {
+        let somme = 0
+        let tableString = `<table>
+                            <thead>
+                                <tr>
+                                    <th>Description de service</th>
+                                    <th>Prix</th>
+                                </tr>
+                            </thead>
+                            <tbody>`
+            recaps.forEach(recap => {
+                if(typeof recap.serviceMinimum !== 'undefined' && typeof recap.prix !== 'undefined'){
+                    tableString += `<tr>
+                                        <td>${recap.serviceMinimum}</td>
+                                        <td>${recap.prix} €</td>
+                                    </tr>`
+                    somme += recap.prix
+                }else if(typeof recap.description == 'undefined' && recap.prix == 0){
+                    tableString += ""
+               }
+            })
+            tableString += `<tr>
+                                <td>Total</td>
+                                <td>${somme} €</td>
+                            </tr>`
             
         tableString += "</tbody></table>"                  
         return tableString
@@ -235,6 +375,7 @@
 
 
 
+    //changement de couleur de body à chaque changement de question
     var colors = ["#A3E4DB", "#F4EEA9", "#F5EEDC", "#FED2AA", "#E6E6E6", "#FFEDD3"];
     var colorIndex = 0;
     function changeColor() {
