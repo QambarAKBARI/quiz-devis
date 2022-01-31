@@ -133,7 +133,9 @@
 
                             // si l'id question suivante n'est pas définie
                             }else if(typeof reponse.fields.questionSuivante == 'undefined'){
-
+                                console.log('terminé')
+                            }else{
+                                
                             }
                             reponseBouton =
                                      "<button class='uk-button-primary uk-button-small  boutonReponse'  onclick='changeColor();' "+ attributBoutonReponse +"  data-id-reponse='" + reponse.id + "'>" + reponse.fields.txtReponse + "</button>" 
@@ -242,7 +244,7 @@
         var tableRecaps = ""
         recaps.forEach(recap => {
             if(typeof recap.description !== 'undefined' && typeof recap.prix !== 'undefined'){
-            tableRecaps += `( ${recap.description}${recap.prix} € )`
+            tableRecaps += `${recap.description} ${recap.prix} €\n`
                             
             }else if(typeof recap.description == 'undefined' && recap.prix == 0){
                 tableRecaps += ""
@@ -252,16 +254,9 @@
 
 
         //Données à transmettre sur les choix faits par l'utilisateur avec un budget pas souffisant
-        var tableRecapsServiceMinimum = ""
-        recaps.forEach(recap => {
-            if(typeof recap.description !== 'undefined' && typeof recap.prix !== 'undefined'){
-                tableRecapsServiceMinimum += `( ${recap.description}${recap.prix} € )`
-                            
-            }else if(typeof recap.description == 'undefined' && recap.prix == 0){
-                tableRecapsServiceMinimum += ""
-            }
-        })
-      
+        var tableRecapsServiceMinimum = " "
+        console.log('service minimum'+tableRecapsServiceMinimum)
+        //var uriTest = "Les services proposés à votre budget de ${valeurBudgetClient}€ : \n ${tableRecapsServiceMinimum}  \n Table récapitulatif : \n${tableRecaps} \n la valeur totale =${totalValeur}"
 
         
 
@@ -281,11 +276,42 @@
             budgetSaisi.innerHTML = "Les services fourins pour votre budget de  "+ valeurBudgetClient +" €"
             recapBudgetClient.innerHTML = createTableRecapitulatifServiceMinimum()
 
+
+            let prixServiceMinimumCumule = 0
+            let budgetClient = valeurBudgetClient
+            let somme = 0
+            //on remplit le service minimum pour le URL airtable
+            recaps.forEach(recap => {
+
+                if(typeof recap.description !== 'undefined' && typeof recap.prix !== 'undefined'){
+
+                    prixServiceMinimumCumule += recap.prix
+
+                    if(prixServiceMinimumCumule > budgetClient) return
+
+                    tableRecapsServiceMinimum += `${recap.description} ${recap.prix} €\n`
+                    somme += recap.prix
+                        
+                   
+                                
+                }else if(typeof recap.description == 'undefined' && recap.prix == 0){
+                    tableRecapsServiceMinimum += ""
+                }
+                
+            })
+            tableRecapsServiceMinimum += `Total : ${somme} €\n`
         //service complet
         }else if(valeurBudgetClient >= totalValeur){
             budgetSaisi.innerHTML = "Les services fourins pour votre budget de  "+ valeurBudgetClient +" €"
             recapBudgetClient.innerHTML = createTableRecapitulatifBudgetClient()
         }
+
+
+        var uri = "Votre budget "+ valeurBudgetClient +" € :\n"+ tableRecapsServiceMinimum +"\nTable récapitulatif : \n"+ tableRecaps +"la valeur totale estimé environ : "+ totalValeur +" €"
+        var uriEncodee = encodeURI(uri)
+
+
+
 
         estimation.innerHTML = "<h3>L'estimation de prix de votre site s'élève entre"+ valeurMarge +"€ et "+ totalValeur +"€</h3>"
         
@@ -293,7 +319,7 @@
         boutonImprimer.innerHTML = `<button type='submit' class='uk-button-primary uk-button-small' onclick='imprime()'>
                                         Imprimer
                                     </button>`
-        boutonContact.innerHTML = `<a class='uk-button-primary uk-button-small' href='https://airtable.com/shrtvWMYReFks6tMo?prefill_resumeDevis=Les services proposés à votre budget de ${valeurBudgetClient}€ : ${tableRecapsServiceMinimum} Table récapitulatif :${tableRecaps}la valeur totale =${totalValeur}'>
+        boutonContact.innerHTML = `<a class='uk-button-primary uk-button-small' href='https://airtable.com/shrtvWMYReFks6tMo?prefill_resumeDevis=${uriEncodee}'>
                                         Contactez Moi
                                     </a>`
         recap.innerHTML = createTableRecapitulatif()
