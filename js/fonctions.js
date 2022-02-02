@@ -1,9 +1,14 @@
-
+// Valeur totale que coûte le site
 var totalValeur = 0
+// un tableau qui contient les ids des questions pour nous sérvir en cas de retour en arrière 
 var lesIdsQuestions = []
+// contient prix description et serviceMinimum par rapport à une réponse donnée par utilisateur
 var ligneObjet = {}
+// ce tableau contient l'objet ligneObjet
 var recaps = []
+// budget saisi par l'utilisateur
 var valeurBudgetClient = 0
+
 const quizz = document.querySelector("#quizz")
 
 
@@ -26,7 +31,7 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                 recaps.pop()
                 boutonRetourClique = false
             }
-
+            // on affiche le bouton retour après avoir afficher la première question
             if(apiResponse.fields.isPremiere !== 1)
             {
                 idQuestionPrecedente = lesIdsQuestions[lesIdsQuestions.length - 2]
@@ -38,9 +43,10 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                 }
             }
 
-            //On affiche la question
+           
             $(".contenuQuizz").hide()
             $(".affichage-devis").hide()
+             //On affiche la question
             if (typeof apiResponse.fields.txtQuestion !== 'undefined' && typeof apiResponse.fields.complement !== 'undefined') 
             {
                 let questionTexte =
@@ -65,7 +71,7 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
 
                     //On crée les boutons oui ou non ou ... pour chaque réponse
                     //on injecte l'id de question suivante dans data-qst-suiv
-                    //on injecte l'id de la réponse  dans data-qst-suiv
+                    //on injecte l'id de la réponse  dans data-id-reponse
                     apiResponse.records.forEach(reponse => {
 
                         let reponseBouton = ""
@@ -91,12 +97,12 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                     //correspandant à cett id
                     let lesBoutons = document.querySelectorAll(".boutonReponse")
                     lesBoutons.forEach( el => {
-                        //quizz.classList.remove('uk-animation-fade')
-                        //quizz.classList.remove('uk-animation-reverse')
+                        $("#quizz").removeClass('uk-animation-fade')
+                        $("#quizz").removeClass('uk-animation-reverse')
                         el.addEventListener('click', (boutonClique) => {
                             
-                            //quizz.classList.add('uk-animation-fade')
-                            //quizz.classList.add('uk-animation-reverse')
+                            $("#quizz").addClass('uk-animation-fade')
+                            $("#quizz").addClass('uk-animation-reverse')
 
                             var questionSuivante = boutonClique.target.dataset.qstSuiv
                             var theReponseId = boutonClique.target.dataset.idReponse
@@ -167,8 +173,8 @@ function displayQuizz(){
 function afficherLeDevis(){
 
     $("#budget-client").html("")
-    //quizz.classList.remove('uk-animation-fade')
-    //quizz.classList.remove('uk-animation-reverse')
+    $("#quizz").removeClass('uk-animation-fade')
+    $("#quizz").removeClass('uk-animation-reverse')
     const recap = document.querySelector("#recap")
     const estimation = document.querySelector("#estimation")
     const boutonRetour = document.querySelector("#affiche-bouton-retour")
@@ -192,12 +198,8 @@ function afficherLeDevis(){
 
 
 
-    //Données à transmettre sur les choix faits par l'utilisateur avec un budget pas souffisant
+    //Données à transmettre à airtable sur les choix faits par l'utilisateur avec un budget pas souffisant
     let tableRecapsServiceMinimum = " "
-    console.log('service minimum'+tableRecapsServiceMinimum)
-    //var uriTest = "Les services proposés à votre budget de ${valeurBudgetClient}€ : \n ${tableRecapsServiceMinimum}  \n Table récapitulatif : \n${tableRecaps} \n la valeur totale =${totalValeur}"
-
-    
 
     // on calcule le totalValeur
     recaps.forEach(record => {
@@ -242,6 +244,18 @@ function afficherLeDevis(){
     //service complet
     }else if(valeurBudgetClient >= totalValeur){
         budgetSaisi.innerHTML = "Votre budget de  "+ valeurBudgetClient +" €"
+
+        //Données à transmettre sur l'ensemble des choix faits par l'utilisateur
+        let tableRecaps = ""
+        recaps.forEach(recap => {
+            if(typeof recap.description !== 'undefined' && typeof recap.prix !== 'undefined'){
+            tableRecaps += `${recap.description} ${recap.prix} €\n`
+                            
+            }else if(typeof recap.description == 'undefined' && recap.prix == 0){
+                tableRecaps += ""
+            }
+        })
+        
     }
 
 
@@ -265,7 +279,7 @@ function afficherLeDevis(){
 
 }
 
-
+//affichage de la page pour demander le budget client
 function afficherPageBudget(){
     const budgetClient = document.querySelector("#budget-client")
     budgetClient.innerHTML = `<h3>Veuillez indiquer votre budget </h3>
@@ -286,6 +300,8 @@ function afficherPageBudget(){
         afficherLeDevis()
     })
 }
+
+
 // on crée la table de récapitulatif
 function createTableRecapitulatif() {
     let tableString = `<table>
@@ -315,7 +331,7 @@ function createTableRecapitulatif() {
     return tableString
 }
 
-
+// on crée la table de récapitulatifServiceMinimum car le budget n'est pas souffisant
 function createTableRecapitulatifServiceMinimum() {
     let somme = 0
     let prixServiceMinimumCumule = 0
