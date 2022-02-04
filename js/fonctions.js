@@ -119,8 +119,10 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                                     //contient la description de la réponse
                                     let descriptionLigneDevis = apiResponse.fields.descriptionLigneDevis
 
+                                    let messagePreRempli = apiResponse.fields.messagePreRempli
 
-                                    ligneObjet = {"prix": laValeurReponse, "description": descriptionLigneDevis, "serviceMinimum": serviceMinimum}
+
+                                    ligneObjet = {"prix": laValeurReponse, "description": descriptionLigneDevis, "serviceMinimum": serviceMinimum, "messagePreRempli": messagePreRempli}
                                     recaps.push(ligneObjet)
                                     
                                     $(".contenuQuizz").html("")
@@ -184,26 +186,12 @@ function afficherLeDevis(){
     const recapBudgetClient = document.querySelector("#recapBudgetClient")
 
 
-
-    //Données à transmettre sur l'ensemble des choix faits par l'utilisateur
-    let tableRecaps = ""
-    recaps.forEach(recap => {
-        if(typeof recap.description !== 'undefined' && typeof recap.prix !== 'undefined'){
-        tableRecaps += `${recap.description} ${recap.prix} €\n`
-                        
-        }else if(typeof recap.description == 'undefined' && recap.prix == 0){
-            tableRecaps += ""
-        }
-    })
-
-
-
-    //Données à transmettre à airtable sur les choix faits par l'utilisateur avec un budget pas souffisant
-    let tableRecapsServiceMinimum = " "
-
     // on calcule le totalValeur
     recaps.forEach(record => {
-        totalValeur += record.prix
+        if(typeof record.prix !== 'undefined'){
+            totalValeur += record.prix
+        }
+            
     })
 
     //la marge
@@ -212,6 +200,36 @@ function afficherLeDevis(){
     //on compte 200€ en dessous de la marge
     let valeurAffichageServiceMinimum = valeurMarge - 200 
 
+
+
+
+    //Données à transmettre sur l'ensemble des choix faits par l'utilisateur(service maximum airtable)
+    let tableRecaps = ""
+    let sommeTotale = 0
+    let message = ""
+    recaps.forEach(recap => {
+        if(typeof  recap.messagePreRempli !== "undefined"){
+            message += `Remarque : ${recap.messagePreRempli}\n`
+        }else{
+            message += ""
+        }
+        if(typeof recap.description !== 'undefined' && typeof recap.prix !== 'undefined'){
+            tableRecaps += `${recap.description} ${recap.prix} €\n`
+            sommeTotale += recap.prix
+                        
+        }else if(typeof recap.description == 'undefined' && recap.prix == 0){
+            tableRecaps += ""
+        }
+
+    })
+    tableRecaps += `Total : ${sommeTotale}\n`
+    tableRecaps += `${message}`
+
+
+
+
+    //Données à transmettre à airtable sur les choix faits par l'utilisateur avec un budget pas souffisant
+    let tableRecapsServiceMinimum = ""
     //service minimum
     if(valeurBudgetClient < valeurAffichageServiceMinimum){
         budgetSaisi.innerHTML = "Votre budget est de  "+ valeurBudgetClient +" €"
@@ -232,8 +250,6 @@ function afficherLeDevis(){
 
                 tableRecapsServiceMinimum += `${recap.description} ${recap.prix} €\n`
                 somme += recap.prix
-                    
-                
                             
             }else if(typeof recap.description == 'undefined' && recap.prix == 0){
                 tableRecapsServiceMinimum += ""
@@ -244,27 +260,16 @@ function afficherLeDevis(){
     //service complet
     }else if(valeurBudgetClient >= totalValeur){
         budgetSaisi.innerHTML = "Votre budget de  "+ valeurBudgetClient +" €"
-
-        //Données à transmettre sur l'ensemble des choix faits par l'utilisateur
-        let tableRecaps = ""
-        recaps.forEach(recap => {
-            if(typeof recap.description !== 'undefined' && typeof recap.prix !== 'undefined'){
-            tableRecaps += `${recap.description} ${recap.prix} €\n`
-                            
-            }else if(typeof recap.description == 'undefined' && recap.prix == 0){
-                tableRecaps += ""
-            }
-        })
         
     }
 
 
-    let uri = "Votre budget "+ valeurBudgetClient +" € :\n"+ tableRecapsServiceMinimum +"\nTable récapitulatif : \n"+ tableRecaps +"la valeur totale estimé environ : "+ totalValeur +" €"
+    let uri = "Votre budget "+ valeurBudgetClient +" € :\n"+ tableRecapsServiceMinimum +"\nTable récapitulatif : \n"+ tableRecaps +""
     let uriEncodee = encodeURI(uri)
 
 
 
-    estimation.innerHTML = "<h3>L'estimation de prix de votre site s'élève entre"+ valeurMarge +"€ et "+ totalValeur +"€</h3>"
+    estimation.innerHTML = "<h3>L'estimation de prix de votre site s'élève entre "+ valeurMarge +"€ et "+ totalValeur +"€</h3>"
     
     boutonRetour.innerHTML = ""
     boutonImprimer.innerHTML = `<button type='submit' class='uk-button-primary uk-button-small' onclick='imprime()'>
@@ -304,6 +309,7 @@ function afficherPageBudget(){
 
 // on crée la table de récapitulatif
 function createTableRecapitulatif() {
+    let somme = 0
     let tableString = `<table>
                         <thead>
                             <tr>
@@ -318,13 +324,14 @@ function createTableRecapitulatif() {
                                 <td>${recap.description}</td>
                                 <td>${recap.prix} €</td>
                             </tr>`
+                            somme += recap.prix 
             }else if(typeof recap.description == 'undefined' && recap.prix == 0){
                 tableString += ""
             }
         })
         tableString += `<tr>
                             <td>Total</td>
-                            <td>${totalValeur} €</td>
+                            <td>${somme} €</td>
                         </tr>`
         
     tableString += "</tbody></table>"                  
