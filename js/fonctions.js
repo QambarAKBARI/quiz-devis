@@ -85,7 +85,7 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                         // si l'id question suivante n'est pas définie
                         }else if(typeof reponse.fields.questionSuivante == 'undefined'){}
                         reponseBouton =
-                            "<button class='uk-button-primary uk-button-small  boutonReponse'  onclick='changeColor();' "+ attributBoutonReponse +"  data-id-reponse='" + reponse.id + "'>" + reponse.fields.txtReponse + "</button>" 
+                            "<button class='uk-button-primary uk-button-small  boutonReponse' id='test'  onclick='changeColor();' "+ attributBoutonReponse +"  data-id-reponse='" + reponse.id + "'>" + reponse.fields.txtReponse + "</button>" 
                             $("#affichage-reponse").append(reponseBouton)
 
                     })
@@ -126,14 +126,17 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                                     recaps.push(ligneObjet)
                                     
                                     $(".contenuQuizz").html("")
+                                    console.log('id courant : '+idQuestion)
                                     if(questionSuivante)
                                     {
                                         afficherLaQuestion(questionSuivante, false)
-                                    }else
-                                    {
-                                        afficherPageBudget()
+                                        if(questionSuivante == "rectMTzhdfSRaDxLE"){
+                                            afficherPageBudget()
+                                        }
+                                    }else{
+                                        afficherLeDevis()
                                     }
-                                    
+   
                                 }
                             })
                         })
@@ -209,7 +212,7 @@ function afficherLeDevis(){
     let message = ""
     recaps.forEach(recap => {
         if(typeof  recap.messagePreRempli !== "undefined"){
-            message += `Remarque : ${recap.messagePreRempli}\n`
+            message += `${recap.messagePreRempli}\n`
         }else{
             message += ""
         }
@@ -222,8 +225,8 @@ function afficherLeDevis(){
         }
 
     })
-    tableRecaps += `Total : ${sommeTotale}\n`
-    tableRecaps += `${message}`
+    tableRecaps += `Total : ${sommeTotale}\n\n`
+    tableRecaps += `REMARQUE : \n${message}\n`
 
 
 
@@ -275,7 +278,7 @@ function afficherLeDevis(){
     boutonImprimer.innerHTML = `<button type='submit' class='uk-button-primary uk-button-small' onclick='imprime()'>
                                     Imprimer
                                 </button>`
-    boutonContact.innerHTML = `<a class='uk-button-primary uk-button-small' href='https://airtable.com/shrtvWMYReFks6tMo?prefill_resumeDevis=${uriEncodee}'>
+    boutonContact.innerHTML = `<a class='uk-button-primary uk-button-small' href="https://airtable.com/shrtvWMYReFks6tMo?prefill_resumeDevis=${uriEncodee}">
                                     Contactez Moi
                                 </a>`
     recap.innerHTML = createTableRecapitulatif()
@@ -287,23 +290,26 @@ function afficherLeDevis(){
 //affichage de la page pour demander le budget client
 function afficherPageBudget(){
     const budgetClient = document.querySelector("#budget-client")
-    budgetClient.innerHTML = `<h3>Veuillez indiquer votre budget </h3>
-                                <form class='uk-form'>
+    budgetClient.innerHTML = `
+                            <h3>Veuillez indiquer votre budget </h3>
+                                
                                 <label class='uk-label'>
                                     Votre Budget
                                     <input id='valeurIndique' type='number' class='uk-input uk-form-width-medium' placeholder='votre budget' required>
                                 </label>
-                                <input class='uk-input uk-form-success uk-form-width-medium' id='boutonValider' type='submit' value='Valider'>
-                                </form>`
+                                `
 
-    const boutonValider = document.querySelector("#boutonValider")
-    boutonValider.addEventListener('click', (e)=> {
-        e.preventDefault()
-        valeurBudgetClient = document.querySelector('#valeurIndique').value
+    const boutonValider = document.querySelectorAll("#test")
+    boutonValider.forEach(el => {
+        console.log(el)
+        el.addEventListener('click', (afficheDevis)=> {
+            
+            valeurBudgetClient = document.querySelector('#valeurIndique').value
+            console.log(valeurBudgetClient)
+        })
 
-        if(typeof valeurBudgetClient !== 'undefind')
-        afficherLeDevis()
     })
+
 }
 
 
