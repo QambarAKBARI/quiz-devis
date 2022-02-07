@@ -103,7 +103,19 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                             
                             $("#quizz").addClass('uk-animation-fade')
                             $("#quizz").addClass('uk-animation-reverse')
-
+                            if(document.querySelector('#valeurIndique') !== null){
+                                valeurBudgetClient = document.querySelector('#valeurIndique').value
+                                
+                                if(valeurBudgetClient == ""){
+                                    console.log("ok")
+                                    $(".boutonReponse").addClass("form-danger")
+                                    
+                                }else if(valeurBudgetClient !== ""){
+                                    $(".boutonReponse").addClass("form-success")
+                                    
+                                }
+                            }
+                            
                             var questionSuivante = boutonClique.target.dataset.qstSuiv
                             var theReponseId = boutonClique.target.dataset.idReponse
                             
@@ -126,15 +138,25 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                                     recaps.push(ligneObjet)
                                     
                                     $(".contenuQuizz").html("")
-                                    console.log('id courant : '+idQuestion)
+                                   // console.log('id courant : '+idQuestion)
                                     if(questionSuivante)
                                     {
                                         afficherLaQuestion(questionSuivante, false)
                                         if(questionSuivante == "rectMTzhdfSRaDxLE"){
                                             afficherPageBudget()
+                                            if(valeurBudgetClient == ""){
+                                                //$("#test").attr('disabled', true)
+                                            }else if(valeurBudgetClient !== ""){
+                                                //$("#test").removeAttr('disabled', true)
+                                            }
                                         }
                                     }else{
-                                        afficherLeDevis()
+            
+                                        afficherLeDevis(valeurBudgetClient)
+                                        
+                                        
+               
+                                        
                                     }
    
                                 }
@@ -175,8 +197,8 @@ function displayQuizz(){
 
 
 //fonction pour afficher le devis
-function afficherLeDevis(){
-
+function afficherLeDevis(valeurBudgetSaisi){
+    
     $("#budget-client").html("")
     $("#quizz").removeClass('uk-animation-fade')
     $("#quizz").removeClass('uk-animation-reverse')
@@ -234,13 +256,13 @@ function afficherLeDevis(){
     //Données à transmettre à airtable sur les choix faits par l'utilisateur avec un budget pas souffisant
     let tableRecapsServiceMinimum = ""
     //service minimum
-    if(valeurBudgetClient < valeurAffichageServiceMinimum){
-        budgetSaisi.innerHTML = "Votre budget est de  "+ valeurBudgetClient +" €"
+    if(valeurBudgetSaisi < valeurAffichageServiceMinimum){
+        budgetSaisi.innerHTML = "Votre budget est de  "+ valeurBudgetSaisi +" €"
         recapBudgetClient.innerHTML = createTableRecapitulatifServiceMinimum()
 
 
         let prixServiceMinimumCumule = 0
-        let budgetClient = valeurBudgetClient
+        let budgetClient = valeurBudgetSaisi
         let somme = 0
         //on remplit le service minimum pour le URL airtable
         recaps.forEach(recap => {
@@ -261,13 +283,13 @@ function afficherLeDevis(){
         })
         tableRecapsServiceMinimum += `Total : ${somme} €\n`
     //service complet
-    }else if(valeurBudgetClient >= totalValeur){
-        budgetSaisi.innerHTML = "Votre budget de  "+ valeurBudgetClient +" €"
+    }else if(valeurBudgetSaisi >= totalValeur){
+        budgetSaisi.innerHTML = "Votre budget de  "+ valeurBudgetSaisi +" €"
         
     }
 
 
-    let uri = "Votre budget "+ valeurBudgetClient +" € :\n"+ tableRecapsServiceMinimum +"\nTable récapitulatif : \n"+ tableRecaps +""
+    let uri = "Votre budget "+ valeurBudgetSaisi +" € :\n"+ tableRecapsServiceMinimum +"\nTable récapitulatif : \n"+ tableRecaps +""
     let uriEncodee = encodeURI(uri)
 
 
@@ -289,6 +311,7 @@ function afficherLeDevis(){
 
 //affichage de la page pour demander le budget client
 function afficherPageBudget(){
+    $("#budget-client").html("")
     const budgetClient = document.querySelector("#budget-client")
     budgetClient.innerHTML = `
                             <h3>Veuillez indiquer votre budget </h3>
@@ -298,18 +321,8 @@ function afficherPageBudget(){
                                     <input id='valeurIndique' type='number' class='uk-input uk-form-width-medium' placeholder='votre budget' required>
                                 </label>
                                 `
-
-    const boutonValider = document.querySelectorAll("#test")
-    boutonValider.forEach(el => {
-        console.log(el)
-        el.addEventListener('click', (afficheDevis)=> {
-            
-            valeurBudgetClient = document.querySelector('#valeurIndique').value
-            console.log(valeurBudgetClient)
-        })
-
-    })
-
+    $(".boutonReponse").attr('disabled', true)
+    console.log("ok")
 }
 
 
