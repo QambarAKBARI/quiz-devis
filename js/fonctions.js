@@ -68,7 +68,7 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                 dataType: 'json',
                 success: function(apiResponse) {
                     $("#affichage-reponse").html("")
-
+                    let attribut = ""
                     //On crée les boutons oui ou non ou ... pour chaque réponse
                     //on injecte l'id de question suivante dans data-qst-suiv
                     //on injecte l'id de la réponse  dans data-id-reponse
@@ -84,13 +84,19 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
 
                         // si l'id question suivante n'est pas définie
                         }else if(typeof reponse.fields.questionSuivante == 'undefined'){}
+                        if(reponse.fields.isDerniere == 1){
+                            attribut = "disabled"
+                            notice.innerText = "J'ai besoin de connître votre budget pour présenter une offre adaptée "
+                        }
                         reponseBouton =
-                            "<button class='uk-button-primary uk-button-small  boutonReponse' id='test'  onclick='changeColor();' "+ attributBoutonReponse +"  data-id-reponse='" + reponse.id + "'>" + reponse.fields.txtReponse + "</button>" 
+                            "<button class='uk-button-primary uk-button-small  boutonReponse' id='test' "+ attribut +" onclick='changeColor();' "+ attributBoutonReponse +"  data-id-reponse='" + reponse.id + "'>" + reponse.fields.txtReponse + "</button>" 
+
                             $("#affichage-reponse").append(reponseBouton)
 
                     })
 
                     $(".contenuQuizz").fadeIn(700)
+                    console.log("affichage des boutons réponses")
                     
                     //On récupère les dataset de questionSuivante et dataset de l'id de réponse 
                     //on passe l'id de la réponse dans la requette pour récupérer les infos 
@@ -106,14 +112,7 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                             if(document.querySelector('#valeurIndique') !== null){
                                 valeurBudgetClient = document.querySelector('#valeurIndique').value
                                 
-                                if(valeurBudgetClient == ""){
-                                    console.log("ok")
-                                    $(".boutonReponse").addClass("form-danger")
-                                    
-                                }else if(valeurBudgetClient !== ""){
-                                    $(".boutonReponse").addClass("form-success")
-                                    
-                                }
+
                             }
                             
                             var questionSuivante = boutonClique.target.dataset.qstSuiv
@@ -143,12 +142,9 @@ function afficherLaQuestion (idQuestion, boutonRetourClique = false) {
                                     {
                                         afficherLaQuestion(questionSuivante, false)
                                         if(questionSuivante == "rectMTzhdfSRaDxLE"){
+                                           
                                             afficherPageBudget()
-                                            if(valeurBudgetClient == ""){
-                                                //$("#test").attr('disabled', true)
-                                            }else if(valeurBudgetClient !== ""){
-                                                //$("#test").removeAttr('disabled', true)
-                                            }
+                                           
                                         }
                                     }else{
             
@@ -311,6 +307,7 @@ function afficherLeDevis(valeurBudgetSaisi){
 
 //affichage de la page pour demander le budget client
 function afficherPageBudget(){
+    console.log("boom page budget")
     $("#budget-client").html("")
     const budgetClient = document.querySelector("#budget-client")
     budgetClient.innerHTML = `
@@ -318,11 +315,32 @@ function afficherPageBudget(){
                                 
                                 <label class='uk-label'>
                                     Votre Budget
-                                    <input id='valeurIndique' type='number' class='uk-input uk-form-width-medium' placeholder='votre budget' required>
+                                    <input id='valeurIndique' type='number' class='uk-input ' placeholder='votre budget' required>
                                 </label>
                                 `
-    $(".boutonReponse").attr('disabled', true)
-    console.log("ok")
+    const champValeur = document.querySelector("#valeurIndique")
+    const notice = document.querySelector("#notice")
+
+    $("#test").attr('disabled', true)
+    champValeur.addEventListener("input", (event)=> {
+        valeurRecuperee = event.target.value
+       
+        if(valeurRecuperee.length <= 2){
+            champValeur.classList.remove("uk-form-success")
+            champValeur.classList.add("uk-form-danger")
+            $("#test").attr('disabled', true)
+            notice.innerText = "J'ai besoin de connître votre budget pour présenter une offre adaptée"
+        }else if(valeurRecuperee >=  3){
+            champValeur.classList.remove("uk-form-danger")
+            champValeur.classList.add("uk-form-success")
+            $("#test").attr('disabled', false)
+            notice.innerText = ""
+        }
+
+
+
+    })                     
+
 }
 
 
